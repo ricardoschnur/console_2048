@@ -12,21 +12,22 @@ public class io {
   public static void chooseMove(board field) {
     System.out.print( "Enter a move: " );
     char c = getInput();
+    int i = 0;
     switch (c) {
       case 'w':
-      field.moveUp();
+      i = field.moveUp();
       break;
 
       case 'a':
-      field.moveLeft();
+      i = field.moveLeft();
       break;
 
       case 's':
-      field.moveDown();
+      i = field.moveDown();
       break;
 
       case 'd':
-      field.moveRight();
+      i = field.moveRight();
       break;
 
       case 'q':
@@ -38,5 +39,11 @@ public class io {
       io.chooseMove(field);
       break;
     }
+    if (i == 0) {
+      System.out.println("Move '" + c + "' not possible.\n");
+      io.chooseMove(field);
+      return;
+    }
+    field.addTile();
   }
 }

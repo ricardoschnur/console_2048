@@ -206,56 +206,91 @@ public class board {
     setFull(x2, y2, false);
 
     this.score += 2*val1;
+    this.free += 1;
   }
 
 
   // Perform movement of tile t from (x,y) to (x+dx, y+dy) if possible
   // Handle merging, borders, no move possible
-  public void move(tile t, int x, int y, int dx, int dy) {
-    System.out.println("Should implement moving of tiles, d'oh!");
+  // return 1 if it moved tiles, 0 otherwise
+  public int move(int x, int y, int dx, int dy) {
+    // If tile is empty, do nothing
+    if (!getFull(x, y)) {
+      return 0;
+    }
+
+    // Tile is at border of grid
+    boolean b = (dx == -1 && x == 0) || (dx == 1 && x == this.rows - 1)
+              || (dy == -1 && y == 0) || (dy == 1 && y == this.cols - 1);
+    if (b) {
+        return 0;
+    }
+
+    // Not at border
+    if (!getFull(x + dx, y + dy)) {
+      // recursively move tile up as far as possible
+      moveTile(x, y, x + dx, y +dy);
+      move(x + dx, y + dy, dx, dy);
+      return 1;
+    }
+    if ( getValue(x, y) == getValue(x + dx, y +dy) ) {
+      mergeTiles(x + dx, y + dy, x, y);
+      return 1;
+    }
+    // Should not reach this point
+    return 0;
   }
 
 
-  public void moveUp(){
-    System.out.println("Next move: up\n");
+  // returns 0 if no tiles moves, otherwise positive integer
+  public int moveUp(){
+    int movecounter = 0;
     for (int i = 1; i < this.rows; ++i) {
       for (int j = 0; j < this.cols; ++j) {
-        move(this.field[i][j], i, j, -1, 0);
+        movecounter += move(i, j, -1, 0);
       }
     }
+    return movecounter;
   }
 
 
-  public void moveDown(){
-    System.out.println("Next move: down\n");
+  // returns 0 if no tiles moves, otherwise positive integer
+  public int moveDown(){
+    int movecounter = 0;
     for (int i = this.rows - 1; i >= 0; --i) {
       for (int j = 0; j < this.cols; ++j) {
-        move(this.field[i][j], i, j, 1, 0);
+        movecounter += move(i, j, 1, 0);
       }
     }
+    return movecounter;
   }
 
 
-  public void moveLeft(){
-    System.out.println("Next move: left\n");
+  // returns 0 if no tiles moves, otherwise positive integer
+  public int moveLeft(){
+    int movecounter = 0;
     for (int j = 1; j < this.cols; ++j) {
       for (int i = 0; i < this.rows; ++i) {
-        move(this.field[i][j], i, j, 0, -1);
+        movecounter += move(i, j, 0, -1);
       }
     }
+    return movecounter;
   }
 
 
-  public void moveRight(){
-    System.out.println("Next move: right\n");
+  // returns 0 if no tiles moves, otherwise positive integer
+  public int moveRight(){
+    int movecounter = 0;
     for (int j = this.cols - 1; j >= 0; --j) {
       for (int i = 0; i < this.rows; ++i) {
-        move(this.field[i][j], i, j, 0, 1);
+        movecounter += move(i, j, 0, 1);
       }
     }
+    return movecounter;
   }
 
 
+  // returns 0 if no tiles moves, otherwise positive integer
   public void moveQuit(){
     System.out.println("Quitting.\n");
     System.exit(0);
