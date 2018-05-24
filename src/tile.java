@@ -2,7 +2,6 @@ public class tile {
   int val;
   boolean full;
 
-
   // Constructor for empty tile
   public tile() {
     this.val = 0;

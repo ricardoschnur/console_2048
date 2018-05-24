@@ -163,6 +163,101 @@ public class board {
     for (int i = 0; i < this.cols; ++i) {
       System.out.print(h);
     }
-    System.out.print("\n");
+
+    System.out.println( "\n\nControls:" );
+    System.out.println( "  q   (quit)\n" );
+    System.out.println( "  w   (up)" );
+    System.out.println( "  a   (left)" );
+    System.out.println( "  s   (down)" );
+    System.out.println( "  d   (right)\n" );
+  }
+
+
+  // Moves the tile in position (x1, y1) to position (x2, y2)
+  public void moveTile(int x1, int y1, int x2, int y2) {
+    int val = getValue(x1, y1);
+    boolean full = getFull(x1, y1);
+
+    setValue(x2, y2, val);
+    setFull(x2, y2, full);
+
+    setValue(x1, y1, 0);
+    setFull(x1, y1, false);
+  }
+
+
+  // Merges tiles in position (x1, y1) and (x2, y2)
+  // Produces merged tile at (x1,y1) and empty tile at (x2,y2)
+  public void mergeTiles(int x1, int y1, int x2, int y2) {
+    int val1 = getValue(x1, y1);
+    boolean full1 = getFull(x1, y1);
+
+    int val2 = getValue(x2, y2);
+    boolean full2 = getFull(x2, y2);
+
+    if ( !(val1 == val2 && full1 == true && full2 == true) ) {
+      System.err.println("Could not merge tiles!");
+      System.exit(1);
+    }
+
+    setValue(x1, y1, 2*val1);
+
+    setValue(x2, y2, 0);
+    setFull(x2, y2, false);
+
+    this.score += 2*val1;
+  }
+
+
+  // Perform movement of tile t from (x,y) to (x+dx, y+dy) if possible
+  // Handle merging, borders, no move possible
+  public void move(tile t, int x, int y, int dx, int dy) {
+    System.out.println("Should implement moving of tiles, d'oh!");
+  }
+
+
+  public void moveUp(){
+    System.out.println("Next move: up\n");
+    for (int i = 1; i < this.rows; ++i) {
+      for (int j = 0; j < this.cols; ++j) {
+        move(this.field[i][j], i, j, -1, 0);
+      }
+    }
+  }
+
+
+  public void moveDown(){
+    System.out.println("Next move: down\n");
+    for (int i = this.rows - 1; i >= 0; --i) {
+      for (int j = 0; j < this.cols; ++j) {
+        move(this.field[i][j], i, j, 1, 0);
+      }
+    }
+  }
+
+
+  public void moveLeft(){
+    System.out.println("Next move: left\n");
+    for (int j = 1; j < this.cols; ++j) {
+      for (int i = 0; i < this.rows; ++i) {
+        move(this.field[i][j], i, j, 0, -1);
+      }
+    }
+  }
+
+
+  public void moveRight(){
+    System.out.println("Next move: right\n");
+    for (int j = this.cols - 1; j >= 0; --j) {
+      for (int i = 0; i < this.rows; ++i) {
+        move(this.field[i][j], i, j, 0, 1);
+      }
+    }
+  }
+
+
+  public void moveQuit(){
+    System.out.println("Quitting.\n");
+    System.exit(0);
   }
 }
