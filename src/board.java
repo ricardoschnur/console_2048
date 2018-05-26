@@ -3,17 +3,21 @@ import java.util.concurrent.ThreadLocalRandom;
 public class board {
   int rows;
   int cols;
+  int win_score;
   int free;           // number of free positions on the field
   int score;
+  int highscore;
+  boolean iswon;
   tile[][] field;
 
 
   // Constructor for new board
-  public board(int rows, int cols) {
-    this.score = 0;
+  public board(int rows, int cols, int win_score) {
     this.rows = rows;
     this.cols = cols;
-    this.free = cols * rows;
+    this.win_score = win_score;
+
+    this.highscore = 0;
 
     tile[][] field;
     field = new tile[rows][];
@@ -25,6 +29,47 @@ public class board {
     }
 
     this.field = field;
+
+    this.reset();
+  }
+
+  // Returns a copy of the board
+  public board copyBoard(){
+    board field = new board(this.rows, this.cols, this.win_score);
+    field.free = this.free;
+    field.score = this.score;
+    field.highscore = this.highscore;
+    field.iswon = this.iswon;
+
+    int val;
+    boolean full;
+
+    for (int i = 0; i < this.rows; ++i) {
+      for (int j = 0; j < cols; ++j) {
+        val = this.getValue(i, j);
+        full = this.getFull(i, j);
+
+        field.setValue(i, j, val);
+        field.setFull(i, j, full);
+      }
+    }
+
+    return field;
+  }
+
+
+  // Starts new game, keeps getHighscore
+  public void reset() {
+    this.score = 0;
+    this.free = this.cols * this.rows;
+    this.iswon = false;
+
+    for (int i = 0; i < this.rows; ++i) {
+      for (int j = 0; j < this.cols; ++j) {
+        this.setValue(i, j, 0);
+        this.setFull(i, j, false);
+      }
+    }
 
     // Add two tiles
     this.addTile();
@@ -44,6 +89,11 @@ public class board {
   }
 
 
+  public int getHighscore() {
+    return this.highscore;
+  }
+
+
   // Returns the tile at position (row,col)
   public tile getTile(int row, int col) {
     return this.field[row][col];
@@ -59,6 +109,11 @@ public class board {
   // Returns true if position (row,col) is full, false if empty
   public boolean getFull(int row, int col) {
     return this.field[row][col].getFull();
+  }
+
+
+  public void setHighscore(int highscore) {
+    this.highscore = highscore;
   }
 
 
@@ -117,8 +172,30 @@ public class board {
 
   // Print current state of the board
   public void print() {
-    System.out.print("\033\143");     // Clear screen
-    System.out.print("Current score: " + this.score + "\n\n");
+    // generate strings for score and high scrore with correct length
+    String score = "" + this.score;
+    String highscore = "" + this.highscore;
+
+    while (highscore.length() < 18) {
+      highscore = " " + highscore;
+    }
+
+    while (score.length() < 21) {
+      score = " " + score;
+    }
+
+
+    //System.out.print("\033\143");     // Clear screen
+    System.out.print("\033[H\033[2J");
+    System.out.println("Welcome to 2048 - console edition!\n");
+    System.out.print( "  q   (quit)" );
+    System.out.print("            High Score\n");
+    System.out.print( "  n   (new game)"  + highscore + "\n\n");
+    System.out.print( "  w   (up)\n");
+    System.out.print( "  a   (left)\n" );
+    System.out.print( "  s   (down)" );
+    System.out.print("         Current Score\n");
+    System.out.print( "  d   (right)" + score + "\n\n");
 
     String h = " ------";
     String v = "|      ";
@@ -163,13 +240,7 @@ public class board {
     for (int i = 0; i < this.cols; ++i) {
       System.out.print(h);
     }
-
-    System.out.println( "\n\nControls:" );
-    System.out.println( "  q   (quit)\n" );
-    System.out.println( "  w   (up)" );
-    System.out.println( "  a   (left)" );
-    System.out.println( "  s   (down)" );
-    System.out.println( "  d   (right)\n" );
+    System.out.print("\n\n");
   }
 
 
@@ -195,18 +266,30 @@ public class board {
     int val2 = getValue(x2, y2);
     boolean full2 = getFull(x2, y2);
 
+
     if ( !(val1 == val2 && full1 == true && full2 == true) ) {
       System.err.println("Could not merge tiles!");
       System.exit(1);
     }
 
-    setValue(x1, y1, 2*val1);
+    int doubled_value = 2*val1;
+
+    setValue(x1, y1, doubled_value);
 
     setValue(x2, y2, 0);
     setFull(x2, y2, false);
 
-    this.score += 2*val1;
+    this.score += doubled_value;
     this.free += 1;
+
+    if(this.score > this.highscore) {
+      this.highscore = this.score;
+    }
+
+    if (this.iswon == false && doubled_value == this.win_score) {
+      this.print();
+      this.winGame();
+    }
   }
 
 
@@ -221,9 +304,9 @@ public class board {
 
     // Tile is at border of grid
     boolean b = (dx == -1 && x == 0) || (dx == 1 && x == this.rows - 1)
-              || (dy == -1 && y == 0) || (dy == 1 && y == this.cols - 1);
+    || (dy == -1 && y == 0) || (dy == 1 && y == this.cols - 1);
     if (b) {
-        return 0;
+      return 0;
     }
 
     // Not at border
@@ -293,6 +376,20 @@ public class board {
   // returns 0 if no tiles moves, otherwise positive integer
   public void moveQuit(){
     System.out.println("Quitting.\n");
+    System.exit(0);
+  }
+
+
+  // manages what happens when game is is won
+  public void winGame() {
+    System.out.println("Congratulations, you won!\n");
+    System.exit(0);
+  }
+
+
+  // manages what happens when game is is los
+  public void loseGame() {
+    System.out.println("Game over!\n");
     System.exit(0);
   }
 }
